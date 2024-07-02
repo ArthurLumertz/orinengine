@@ -28,7 +28,10 @@
     // "tick" means update but in a fancier way
   	@Override
   	public void tick(float deltaTime) {
-  
+      // Nothing to tick!
+      // You could add key detection via
+      // if (Orin.input.isKeyPressed(Keys.W) {
+      // }
   	}
 
   	@Override
