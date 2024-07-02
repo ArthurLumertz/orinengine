@@ -1,4 +1,4 @@
-<h1>Orin Engine</h1>
+<h1>Orin Engine (Java 1.8 and above)</h1>
 <p>Java game engine made in LWJGL 3.</p>
 <p>Similar to LibGDX, RayLib and MonoGame.</p>
 <br>
