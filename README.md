@@ -7,11 +7,6 @@
 <p>After this, create a Main.java file and add the following example code to get you started:</p>
 <br>
 <code>
-  import net.orin.glfw.*;
-  import net.orin.graphics.*;
-  import net.orin.opengl.*;
-  import net.orin.opengl.textures.*;
-  
   public class Demonstration extends Game {
   
   	private Batch batch;
@@ -55,7 +50,5 @@
   		app.setFPS(60);
   		app.create(new Demonstration());
   	}
-
 }
-
 </code>
