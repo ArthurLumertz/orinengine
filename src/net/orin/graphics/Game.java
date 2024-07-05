@@ -1,13 +1,13 @@
 package net.orin.graphics;
 
-public abstract class Game {
+public interface Game {
 
-	public abstract void init();
+	void init();
 
-	public abstract void tick(float deltaTime);
+	void tick(float deltaTime);
 
-	public abstract void render();
+	void render();
 	
-	public abstract void exit();
+	void dispose();
 
 }

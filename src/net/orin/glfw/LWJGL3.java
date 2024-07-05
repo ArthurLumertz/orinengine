@@ -3,19 +3,18 @@ package net.orin.glfw;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 
-import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.*;
 
-import net.orin.Orin;
-import net.orin.file.FileData;
-import net.orin.graphics.Game;
-import net.orin.graphics.window.Window;
-import net.orin.opengl.textures.Textures;
-import net.orin.util.OrinError;
+import net.orin.*;
+import net.orin.file.*;
+import net.orin.graphics.*;
+import net.orin.graphics.window.*;
+import net.orin.opengl.textures.*;
+import net.orin.util.*;
 
 public class LWJGL3 {
 
 	private int fps = 60;
-	
 	private FileData iconData;
 
 	public LWJGL3() {
@@ -30,7 +29,11 @@ public class LWJGL3 {
 	public void setTitle(String title) {
 		Window.setTitle(title);
 	}
-	
+
+	public void setResizable(boolean resizable) {
+		Window.setResizable(resizable);
+	}
+
 	public void setIcon(FileData fileData) {
 		this.iconData = fileData;
 	}
@@ -58,7 +61,7 @@ public class LWJGL3 {
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		
+
 		if (this.iconData != null)
 			Window.setIcon(this.iconData);
 
@@ -71,38 +74,35 @@ public class LWJGL3 {
 
 		game.init();
 
-		long lastTime = System.nanoTime();
-		double nsPerTick = 1000000000.0 / this.fps;
-		double unprocessed = 0;
-
 		try {
+			long lastTime = System.nanoTime();
+			double unprocessed = 0;
+
 			while (!Window.shouldClose()) {
+				Orin.gl.viewport(Orin.graphics.getWidth(), Orin.graphics.getHeight());
+				
 				long now = System.nanoTime();
-				unprocessed += (now - lastTime) / nsPerTick;
-				lastTime = now;
+			    double deltaTime = (now - lastTime) / 1000000000.0;
+			    lastTime = now;
 
-				while (unprocessed >= 1) {
-					double deltaTime = glfwGetTime();
-					glfwSetTime(0);
+			    unprocessed += deltaTime;
 
-					game.tick((float) deltaTime);
-					game.render();
+			    while (unprocessed >= 1.0 / this.fps) {
+			        game.tick(1.0f / this.fps);
+			        unprocessed -= 1.0 / this.fps;
+			    }
 
-					Window.update();
-
-					unprocessed -= 1;
-				}
+				game.render();
+				Window.update();
 			}
 		} catch (OrinError e) {
 			Orin.log.fatal("loop", e.toString());
 		} catch (OutOfMemoryError e) {
 			Orin.app.freeMemory();
 		} finally {
-			game.exit();
-			
-			Textures.dispose();			
+			game.dispose();
+			Textures.dispose();
 			Window.terminate();
 		}
 	}
-
 }

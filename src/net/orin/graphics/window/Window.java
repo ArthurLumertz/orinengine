@@ -3,29 +3,27 @@ package net.orin.graphics.window;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.awt.image.*;
+import java.io.*;
+import java.nio.*;
 
-import javax.imageio.ImageIO;
+import javax.imageio.*;
 
-import org.lwjgl.BufferUtils;
-import org.lwjgl.glfw.GLFWImage;
-import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.glfw.GLFWWindowSizeCallback;
+import org.lwjgl.*;
+import org.lwjgl.glfw.*;
 
-import net.orin.Orin;
-import net.orin.file.FileData;
-import net.orin.glfw.input.Input;
-import net.orin.graphics.Monitor;
+import net.orin.*;
+import net.orin.file.*;
+import net.orin.glfw.input.*;
+import net.orin.graphics.*;
 
 public class Window {
 
 	public static long window;
-
 	public static int width;
 	public static int height;
-	public static boolean fullscreen;
+	public static boolean resizable = true;
+	public static boolean fullscreen = false;
 	public static String title;
 
 	public static void setTitle(String title) {
@@ -47,6 +45,11 @@ public class Window {
 			setSize(854, 480);
 			glfwSetWindowMonitor(window, 0, (monitor.getWidth() - 854) / 2, (monitor.getHeight() - 480) / 2, 854, 480, 0);
 		}
+		Window.fullscreen = fullscreen;
+	}
+
+	public static void setResizable(boolean resizable) {
+		Window.resizable = resizable;
 	}
 
 	public static void setSize(int width, int height) {
@@ -65,19 +68,19 @@ public class Window {
 		if (!glfwInit())
 			throw new IllegalStateException("Failed to initialize GLFW!");
 
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+		glfwWindowHint(GLFW_RESIZABLE, (resizable ? GLFW_TRUE : GLFW_FALSE));
 		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 		window = glfwCreateWindow(width, height, title, NULL, NULL);
 		if (window == NULL)
 			throw new RuntimeException("Failed to create GLFW window!");
-		
+
 		GLFWVidMode videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 		glfwSetWindowPos(window, (videoMode.width() - width) / 2, (videoMode.height() - height) / 2);
 
 		glfwSetKeyCallback(window, Orin.input);
 		glfwSetCursorPosCallback(window, new Input.MousePos());
 		glfwSetMouseButtonCallback(window, new Input.MouseButton());
-		
+
 		glfwSetWindowSizeCallback(window, new GLFWWindowSizeCallback() {
 			@Override
 			public void invoke(long window, int width, int height) {
@@ -89,7 +92,7 @@ public class Window {
 
 		glfwShowWindow(window);
 	}
-	
+
 	public static void setIcon(FileData fileData) {
 		if (window == NULL)
 			return;
@@ -110,15 +113,15 @@ public class Window {
 
 			ByteBuffer byteBuffer = BufferUtils.createByteBuffer(width * height * 4);
 			byteBuffer.asIntBuffer().put(rawPixels);
-			
+
 			GLFWImage.Buffer imageBuffer = GLFWImage.malloc(1);
 			GLFWImage iconImage = GLFWImage.malloc();
-			
+
 			iconImage.set(width, height, byteBuffer);
 			imageBuffer.put(0, iconImage);
-			
+
 			glfwSetWindowIcon(window, imageBuffer);
-			
+
 			iconImage.free();
 			imageBuffer.free();
 		} catch (IOException e) {
@@ -153,6 +156,14 @@ public class Window {
 
 	public static String getTitle() {
 		return title;
+	}
+
+	public static boolean isResizable() {
+		return resizable;
+	}
+
+	public static boolean isFullscreen() {
+		return fullscreen;
 	}
 
 }

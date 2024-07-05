@@ -20,11 +20,6 @@ public class Texture {
 		this.textureData = Textures.loadTexture(fileData, x, y, width, height);
 	}
 	
-	public Texture(Texture texture, int x, int y, int width, int height) {
-		this.fileData = texture.getFileData();
-		this.textureData = Textures.loadTexture(this.fileData, x, y, width, height);
-	}
-	
 	public void bind() {
 		glBindTexture(GL_TEXTURE_2D, this.textureData.getId());
 	}

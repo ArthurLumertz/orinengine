@@ -8,7 +8,10 @@ public class GL {
 
 	public static final int COLOR = GL_COLOR_BUFFER_BIT;
 	public static final int DEPTH = GL_DEPTH_BUFFER_BIT;
-	public static final int INVALID = -1;
+	public static final int LEQUAL = GL_LEQUAL;
+	public static final int SMOOTH = GL_SMOOTH;
+	public static final int TRUE = GL_TRUE;
+	public static final int FALSE = GL_FALSE;
 	
 	public void clear(int mask) {
 		glClear(mask);
@@ -31,6 +34,14 @@ public class GL {
 		float green = (color >> 8 & 0xFF) / 255.0F;
 		float blue = (color & 0xFF) / 255.0F;
 		clearColor(red, green, blue);
+	}
+	
+	public void viewport(int x, int y, int width, int height) {
+		glViewport(x, y, width, height);
+	}
+	
+	public void viewport(int width, int height) {
+		viewport(0, 0, width, height);
 	}
 
 }

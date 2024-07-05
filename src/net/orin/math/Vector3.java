@@ -19,6 +19,10 @@ public class Vector3 {
     public Vector3(float x, float y, float z) {
         set(x, y, z);
     }
+    
+    public Vector3(Vector2 other) {
+        set(other.x, other.y, 0.0F);
+    }
 
     public void set(float x, float y, float z) {
         this.x = x;

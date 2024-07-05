@@ -1,10 +1,11 @@
 package net.orin.opengl;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.system.MemoryUtil.*;
 
 import java.nio.*;
 
-import org.lwjgl.*;
+import org.lwjgl.system.jemalloc.*;
 
 import net.orin.*;
 
@@ -14,9 +15,9 @@ public class Tessellator {
 
 	public static final int MAX_VERTICES = 10000;
 
-	private final FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(MAX_VERTICES * 3);
-	private final FloatBuffer textureCoordinateBuffer = BufferUtils.createFloatBuffer(MAX_VERTICES * 2);
-	private final FloatBuffer colorBuffer = BufferUtils.createFloatBuffer(MAX_VERTICES * 4);
+	private FloatBuffer vertexBuffer;
+	private FloatBuffer textureCoordinateBuffer;
+	private ByteBuffer colorBuffer;
 
 	private int vertices = 0;
 
@@ -30,14 +31,25 @@ public class Tessellator {
 	private float blue;
 	private float alpha;
 
-	private boolean drawing = false;
+	public Tessellator() {
+		ByteBuffer vertexBufferAddress = JEmalloc.je_malloc(MAX_VERTICES * 3 * Float.BYTES);
+		ByteBuffer textureCoordinateBufferAddress = JEmalloc.je_malloc(MAX_VERTICES * 2 * Float.BYTES);
+		ByteBuffer colorBufferAddress = JEmalloc.je_malloc(MAX_VERTICES * 4 * Float.BYTES);
+
+		if (vertexBufferAddress == null || textureCoordinateBufferAddress == null || colorBufferAddress == null) {
+			throw new OutOfMemoryError("Failed to allocate memory using jemalloc");
+		}
+
+		this.vertexBuffer = memFloatBuffer(memAddress(vertexBufferAddress), MAX_VERTICES * 3);
+		this.textureCoordinateBuffer = memFloatBuffer(memAddress(textureCoordinateBufferAddress), MAX_VERTICES * 2);
+		this.colorBuffer = colorBufferAddress;
+	}
 
 	public void init() {
-		this.drawing = true;
 		clear();
 	}
 
-	public void clear() {		
+	public void clear() {
 		this.vertexBuffer.clear();
 		this.textureCoordinateBuffer.clear();
 		this.colorBuffer.clear();
@@ -47,12 +59,6 @@ public class Tessellator {
 	}
 
 	public void flush() {
-		if (!this.drawing) {
-			Orin.log.fatal("tessellator", "begin() must be called before end()!");
-			Orin.app.exit();
-		}
-		
-		this.drawing = false;
 		if (this.vertices > 0) {
 			this.vertexBuffer.flip();
 			this.textureCoordinateBuffer.flip();
@@ -62,7 +68,7 @@ public class Tessellator {
 			if (this.hasTexture)
 				glTexCoordPointer(2, GL_FLOAT, GL_POINTS, this.textureCoordinateBuffer);
 			if (this.hasColor)
-				glColorPointer(4, GL_FLOAT, GL_POINTS, this.colorBuffer);
+				glColorPointer(4, GL_BYTE, GL_POINTS, this.colorBuffer);
 
 			glEnableClientState(GL_VERTEX_ARRAY);
 			if (this.hasTexture)
@@ -79,31 +85,23 @@ public class Tessellator {
 				glDisableClientState(GL_COLOR_ARRAY);
 
 			clear();
-		} else {
-			Orin.log.warn("tessellator", "Vertices cannot be 0!");
 		}
 	}
 
 	public void vertex(float x, float y, float z) {
-		if (!this.drawing) {
-			Orin.log.fatal("tessellator", "begin() must be called before vertex()!");
-			Orin.app.exit();
-			return;
-		}
-		
 		this.vertexBuffer.put(this.vertices * 3, x);
 		this.vertexBuffer.put(this.vertices * 3 + 1, y);
 		this.vertexBuffer.put(this.vertices * 3 + 2, z);
 
 		if (this.hasTexture) {
-			this.textureCoordinateBuffer.put(this.vertices * 2, this.textureU);
-			this.textureCoordinateBuffer.put(this.vertices * 2 + 1, this.textureV);
+            this.textureCoordinateBuffer.put(this.vertices * 2, this.textureU);
+            this.textureCoordinateBuffer.put(this.vertices * 2 + 1, this.textureV);
 		}
 		if (this.hasColor) {
-			this.colorBuffer.put(this.vertices * 4, this.red);
-			this.colorBuffer.put(this.vertices * 4 + 1, this.green);
-			this.colorBuffer.put(this.vertices * 4 + 2, this.blue);
-			this.colorBuffer.put(this.vertices * 4 + 3, this.alpha);
+			this.colorBuffer.put(this.vertices * 4, (byte) (this.red * 127));
+			this.colorBuffer.put(this.vertices * 4 + 1, (byte) (this.green * 127));
+			this.colorBuffer.put(this.vertices * 4 + 2, (byte) (this.blue * 127));
+			this.colorBuffer.put(this.vertices * 4 + 3, (byte) (this.alpha * 127));
 		}
 
 		this.vertices++;
@@ -128,6 +126,12 @@ public class Tessellator {
 		this.green = green;
 		this.blue = blue;
 		this.alpha = alpha;
+	}
+
+	public void dispose() {
+		JEmalloc.je_free(this.vertexBuffer);
+		JEmalloc.je_free(this.textureCoordinateBuffer);
+		JEmalloc.je_free(this.colorBuffer);
 	}
 
 }

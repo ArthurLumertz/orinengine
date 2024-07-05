@@ -9,7 +9,7 @@ import net.orin.util.*;
 
 public class Orin {
 
-	private static final String RUNNING_VERSION = "0.0.1a";
+	private static final String RUNNING_VERSION = "0.0.2a";
 
 	public static Input input = new Input();
 	public static Graphics graphics = new Graphics();

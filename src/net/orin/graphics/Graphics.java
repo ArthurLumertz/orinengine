@@ -37,9 +37,21 @@ public class Graphics {
 		GLFWVidMode videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 		return new Monitor(videoMode.width(), videoMode.height(), videoMode.refreshRate());
 	}
+	
+	public void setFullscreen(boolean fullscreen) {
+		Window.setFullscreen(fullscreen);
+	}
 
 	public String getGLVersion() {
 		return glGetString(GL_VERSION);
+	}
+	
+	public boolean isResizable() {
+		return Window.isResizable();
+	}
+	
+	public boolean isFullscreen() {
+		return Window.isFullscreen();
 	}
 
 }

@@ -4,6 +4,7 @@ import static org.lwjgl.opengl.GL11.*;
 
 import net.orin.*;
 import net.orin.graphics.*;
+import net.orin.math.*;
 import net.orin.opengl.textures.*;
 
 public class Batch {
@@ -31,12 +32,18 @@ public class Batch {
 	}
 
 	public void setCamera(Camera camera) {
+		float zoom = camera.getZoom();
+		float viewportWidth = camera.getViewportWidth();
+		float viewportHeight = camera.getViewportHeight();
+		
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(0, camera.viewportWidth * camera.zoom, camera.viewportHeight * camera.zoom, 0, -1.0F, 1.0F);
+		glOrtho(0, viewportWidth * zoom, 0, viewportHeight * zoom, -1.0F, 1.0F);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		glTranslatef(-camera.position.x, -camera.position.y, -camera.position.z);
+		
+		Vector3 position = camera.getPosition();
+		glTranslatef(-position.x, -position.y, -position.z);
 	}
 
 	public void begin() {
@@ -98,6 +105,10 @@ public class Batch {
 
 	public void disableBlending() {
 		glDisable(GL_BLEND);
+	}
+	
+	public void dispose() {
+		t.dispose();
 	}
 
 }
