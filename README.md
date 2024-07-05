@@ -7,7 +7,7 @@
 <p>After this, create a Main.java file and add the following example code to get you started:</p>
 <br>
 <code>
-  public class Demonstration extends Game {
+  public class Demonstration implements Game {
   
   	private Batch batch;
   	private Camera camera;
@@ -41,8 +41,8 @@
   	}
   
   	@Override
-  	public void exit() {
-     this.batch.dispose();
+  	public void dispose() {
+       this.batch.dispose();
   	}
   
   	public static void main(String[] args) {
