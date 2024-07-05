@@ -83,6 +83,7 @@ public class Vector4 {
 		return (float) Math.sqrt(dx * dx + dy * dy + dz * dz + dw * dw);
 	}
 
+    @Deprecated
 	public boolean equals(Vector4 other) {
 		if (other != null) {
 			if (other.x != this.x)

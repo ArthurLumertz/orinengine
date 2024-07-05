@@ -69,6 +69,7 @@ public class Vector2 {
         return (float) Math.sqrt(dx * dx + dy * dy);
     }
     
+    @Deprecated
     public boolean equals(Vector2 other) {
     	if (other != null) {
     		if (other.x != this.x)

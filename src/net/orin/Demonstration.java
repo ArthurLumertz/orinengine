@@ -8,26 +8,20 @@ public class Demonstration implements Game {
 
 	private Batch batch;
 	private Camera camera;
-	
-	private int[][] level;
-	
+
+	private Sprite sprite;
+
 	@Override
 	public void init() {
 		this.batch = new Batch();
-		this.camera = new Camera(Orin.graphics.getWidth(), Orin.graphics.getHeight(), 48);
-	
-		this.level = new int[100][100];
-		
-		for (int x = 0; x < 100; x++) {
-			for (int y = 0; y < 100; y++) {
-				this.level[x][y] = 1;
-			}
-		}
+		this.camera = new Camera(48);
+
+		this.sprite = new Sprite(null);
 	}
 
 	@Override
 	public void tick(float deltaTime) {
-		this.camera.addPosition(1 * deltaTime, 0.0F);
+		this.sprite.addPosition(1.0F * deltaTime, 0.0F);
 	}
 
 	@Override
@@ -35,11 +29,10 @@ public class Demonstration implements Game {
 		Orin.gl.clear(GL.COLOR);
 		Orin.gl.clearColor(Color.CORNFLOWER_BLUE);
 
-		this.batch.begin();
 		this.batch.setCamera(this.camera);
-		
-		
-		
+
+		this.batch.begin();
+		this.sprite.render(this.batch);
 		this.batch.end();
 	}
 

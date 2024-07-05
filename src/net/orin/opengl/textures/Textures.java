@@ -13,6 +13,7 @@ import org.lwjgl.*;
 
 import net.orin.*;
 import net.orin.file.*;
+import net.orin.util.exception.*;
 
 public class Textures {
 
@@ -56,8 +57,7 @@ public class Textures {
 			
 			return data;
 		} catch (IOException e) {
-			Orin.log.fatal("textures", "Failed to load texture: " + fileData.getResourceName());
-			return null;
+			throw new OrinRuntimeException("Failed to load texture: " + fileData.getResourceName());
 		}
 	}
 
@@ -97,8 +97,7 @@ public class Textures {
 			
 			return data;
 		} catch (IOException e) {
-			Orin.log.fatal("textures", "Failed to load texture: " + fileData.getResourceName());
-			return null;
+			throw new OrinRuntimeException("Failed to load texture: " + fileData.getResourceName());
 		}
 	}
 

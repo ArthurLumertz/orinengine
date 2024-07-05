@@ -29,7 +29,7 @@ public class Texture {
 	}
 	
 	public void dispose() {
-		Orin.log.debug("texture", "Disposing texture: " + this.fileData.getResourceName());
+		Orin.log.debug("texture", "Disposing texture: " + this.textureData.getId());
 		glDeleteTextures(this.textureData.getId());
 	}
 	

@@ -82,6 +82,10 @@ public class Batch {
 		t.vertexUV(x + width, y + height, 0.0F, texture.getTextureData().getTextureU1(), texture.getTextureData().getTextureV1());
 		t.vertexUV(x, y + height, 0.0F, texture.getTextureData().getTextureU0(), texture.getTextureData().getTextureV1());
 	}
+	
+	public void drawTexture(Texture texture, Vector2 position, float width, float height) {
+		drawTexture(texture, position.x, position.y, width, height);
+	}
 
 	public void drawRect(float x, float y, float width, float height) {
 		t.vertex(x, y, 0.0F);

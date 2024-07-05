@@ -1,5 +1,6 @@
 package net.orin.graphics;
 
+import net.orin.*;
 import net.orin.math.*;
 
 public class Camera {
@@ -12,6 +13,14 @@ public class Camera {
 	private int viewportWidth;
 	private int viewportHeight;
 
+	public Camera() {
+		this(Orin.graphics.getWidth(), Orin.graphics.getHeight(), 1);
+	}
+	
+	public Camera(int unitSize) {
+		this(Orin.graphics.getWidth(), Orin.graphics.getHeight(), unitSize);
+	}
+	
 	public Camera(int viewportWidth, int viewportHeight, int unitSize) {
 		setPosition(0.0F, 0.0F);
 		setUnitSize(unitSize);

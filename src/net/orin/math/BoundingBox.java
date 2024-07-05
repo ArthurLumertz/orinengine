@@ -2,6 +2,8 @@ package net.orin.math;
 
 public class BoundingBox {
 
+	public static final BoundingBox ZERO = new BoundingBox(0.0F, 0.0F, 0.0F, 0.0F);
+	
 	public float x0;
 	public float y0;
 	public float x1;
@@ -40,6 +42,7 @@ public class BoundingBox {
 		return new BoundingBox(this.x0, this.y0, this.x1, this.y1);
 	}
 
+    @Deprecated
 	public boolean equals(BoundingBox other) {
 		if (other != null) {
 			if (other.x0 != this.x0)

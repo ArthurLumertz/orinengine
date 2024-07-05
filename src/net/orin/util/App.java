@@ -8,7 +8,7 @@ public class App {
 	public void exit() {
 		Orin.log.debug("app", "Exiting game...");
 		Window.close();
-		System.exit(0);
+		System.exit(Util.NULL);
 	}
 	
 	public void freeMemory() {

@@ -12,6 +12,7 @@ public class GL {
 	public static final int SMOOTH = GL_SMOOTH;
 	public static final int TRUE = GL_TRUE;
 	public static final int FALSE = GL_FALSE;
+	public static final int NO_ERROR = GL_NO_ERROR;
 	
 	public void clear(int mask) {
 		glClear(mask);
@@ -27,6 +28,22 @@ public class GL {
 
 	public void clearColor(Color color) {
 		clearColor(color.red, color.green, color.blue, color.alpha);
+	}
+	
+	public void clearDepth(double depth) {
+		glClearDepth(depth);
+	}
+	
+	public void depthFunc(int func) {
+		glDepthFunc(func);
+	}
+	
+	public int getError() {
+		return glGetError();
+	}
+	
+	public String getString(int name) {
+		return glGetString(name);
 	}
 
 	public void clearColor(int color) {

@@ -11,6 +11,7 @@ import net.orin.graphics.*;
 import net.orin.graphics.window.*;
 import net.orin.opengl.textures.*;
 import net.orin.util.*;
+import net.orin.util.exception.*;
 
 public class LWJGL3 {
 
@@ -62,8 +63,9 @@ public class LWJGL3 {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		if (this.iconData != null)
+		if (this.iconData != null) {			
 			Window.setIcon(this.iconData);
+		}
 
 		Orin.log.info("startup", "Starting the game...");
 		start(game);
@@ -81,6 +83,11 @@ public class LWJGL3 {
 			while (!Window.shouldClose()) {
 				Orin.gl.viewport(Orin.graphics.getWidth(), Orin.graphics.getHeight());
 				
+				int error = Orin.gl.getError();
+				if (error != net.orin.opengl.GL.NO_ERROR) {
+					throw new OrinRuntimeException(Orin.gl.getString(error));
+				}
+				
 				long now = System.nanoTime();
 			    double deltaTime = (now - lastTime) / 1000000000.0;
 			    lastTime = now;
@@ -88,7 +95,7 @@ public class LWJGL3 {
 			    unprocessed += deltaTime;
 
 			    while (unprocessed >= 1.0 / this.fps) {
-			        game.tick(1.0f / this.fps);
+			        game.tick(1.0F / this.fps);
 			        unprocessed -= 1.0 / this.fps;
 			    }
 

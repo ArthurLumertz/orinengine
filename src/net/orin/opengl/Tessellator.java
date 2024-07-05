@@ -7,8 +7,6 @@ import java.nio.*;
 
 import org.lwjgl.system.jemalloc.*;
 
-import net.orin.*;
-
 public class Tessellator {
 
 	public static Tessellator instance = new Tessellator();

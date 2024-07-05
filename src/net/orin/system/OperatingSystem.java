@@ -1,6 +1,21 @@
 package net.orin.system;
 
+import java.awt.*;
+import java.awt.Desktop.*;
+import java.net.*;
+
 public class OperatingSystem {
+	
+	public void openURL(String url) {
+		try {
+			Desktop desktop = Desktop.getDesktop();
+			if (desktop.isSupported(Action.BROWSE)) {
+				desktop.browse(new URI(url));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	public enum OS {
 		WINDOWS, MAC, LINUX, SOLARIS, UNIX, UNKNOWN

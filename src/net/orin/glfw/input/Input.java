@@ -58,11 +58,11 @@ public class Input extends GLFWKeyCallback {
     }
     
     public boolean isTouched() {
-    	return isButtonPressed(0);
+    	return isButtonPressed(Buttons.LEFT);
     }
     
     public boolean isJustTouched() {
-    	return isButtonJustPressed(0);
+    	return isButtonJustPressed(Buttons.LEFT);
     }
 	
 	public int getX() {

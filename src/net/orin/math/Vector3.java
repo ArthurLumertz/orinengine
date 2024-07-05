@@ -79,7 +79,8 @@ public class Vector3 {
         float dz = this.z - other.z;
         return (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
-    
+
+    @Deprecated
     public boolean equals(Vector3 other) {
     	if (other != null) {
     		if (other.x != this.x)

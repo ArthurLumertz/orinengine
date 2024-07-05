@@ -1,6 +1,8 @@
 package net.orin.math;
 
 public class Rectangle {
+	
+	public static final Rectangle ZERO = new Rectangle(0.0F, 0.0F, 0.0F, 0.0F);
 
 	public float x;
 	public float y;
@@ -17,6 +19,13 @@ public class Rectangle {
 	public void set(float x, float y, float width, float height) {
 		this.x = x;
 		this.y = y;
+		this.width = width;
+		this.height = height;
+	}
+	
+	public void set(Vector2 position, float width, float height) {
+		this.x = position.x;
+		this.y = position.y;
 		this.width = width;
 		this.height = height;
 	}
@@ -41,6 +50,7 @@ public class Rectangle {
 		return new Rectangle(this.x, this.y, this.width, this.height);
 	}
 
+    @Deprecated
 	public boolean equals(Rectangle other) {
 		if (other != null) {
 			if (other.x != this.x)
