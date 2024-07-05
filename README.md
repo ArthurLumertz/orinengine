@@ -32,7 +32,7 @@
   	@Override
   	public void render() {
   		Orin.gl.clear(GL.COLOR);
-  		Orin.gl.clearColor(Color.BLACK);
+  		Orin.gl.clearColor(Color.CORNFLOWER_BLUE);
   		
   		this.batch.begin();
   		this.batch.setCamera(this.camera);
@@ -42,7 +42,7 @@
   
   	@Override
   	public void exit() {
-  		// No implementation since textures are disposed automatically.
+     this.batch.dispose();
   	}
   
   	public static void main(String[] args) {
