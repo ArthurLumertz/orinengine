@@ -17,6 +17,9 @@ int main() {
   // Create a camera Camera(position, zoom)
   Camera2D camera(Vector2{ 0.0f, 0.0f }, 0.0f);
 
+  // Load a basic texture
+  Texture2D texture = LoadTexture("image.png");
+
   // While the window shouldn't close
   while (!WindowShouldClose()) {
     ClearBackground(WHITE); // Clear the background with white color
@@ -26,12 +29,18 @@ int main() {
 
     // Draw a basic rectangle at the position 0, 0 with the size of 48, 48
     DrawRectangle(0, 0, 48, 48);
+
+    // Draws the texture at the position 48, 0, with the size of 48, 48
+    DrawTexture(texture, 48, 0, 48, 48);
     
     EndDrawing(); // End rendering
 
     // Update the window
     UpdateWindow();
   }
+
+  // Unloads the texture loaded previously
+  UnloadTexture(texture);
 
   // Closes the window
   CloseWindow();
