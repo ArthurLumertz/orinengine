@@ -30,6 +30,7 @@ int main() {
     // Draw a basic rectangle at the position 0, 0 with the size of 48, 48
     DrawRectangle(0, 0, 48, 48);
 
+    SetColor(WHITE); // Sets the rendering color to white before drawing texture
     // Draws the texture at the position 48, 0, with the size of 48, 48
     DrawTexture(texture, 48, 0, 48, 48);
     
