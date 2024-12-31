@@ -1,10 +1,11 @@
-<h1>Orin Framework</h1>
+<h1>Orin</h1>
 <p>C++ game framework made in OpenGL.</p>
 <p>Similar to LibGDX, RayLib and MonoGame.</p>
 <h3>Setup</h3>
 <p>To setup, download the files inside ./src and add them to the project's directory.</p>
 <p>After this, create a main file and start using Orin:</p>
 <br>
+<h3>Basic example</h3>
 
 ```cpp
 #include "orin.hpp"
