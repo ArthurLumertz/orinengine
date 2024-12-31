@@ -6,6 +6,8 @@
 <p>After this, create a main file and start using Orin:</p>
 <br>
 <h3>Basic example</h3>
+<p>This example shows you how to open a window and render basic graphics on it. It shows how to create a camera and load/unload textures.</p>
+<p>Keep in mind this library is in its development stage! Several new performance updates will be coming in 2025.</p>
 
 ```cpp
 #include "orin.hpp"
