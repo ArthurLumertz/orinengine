@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#define ORIN_VERSION      "0.0.7a"
+#define ORIN_VERSION      "0.0.8a"
 #define ORIN_MAJOR              0
 #define ORIN_MINOR              5
 
