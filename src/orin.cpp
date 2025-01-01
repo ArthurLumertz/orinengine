@@ -1,27 +1,82 @@
 #include "orin.hpp"
 
+#include <iostream>
 #include <GLFW/glfw3.h>
 #include <thread>
 #include <filesystem>
 #include <cmath>
+#include <chrono>
+#include <string>
 #include "stb_image.h"
 
-GLFWwindow* window = nullptr;
+bool keys[KEY_LAST];
+bool keysJustPressed[KEY_LAST];
+bool buttons[BUTTON_LAST];
+bool buttonsJustPressed[BUTTON_LAST];
 
-int frameCount = 0;
-float deltaTime;
-float lastTime = GetTime();
+GLFWwindow* window = nullptr;
+int width;
+int height;
+
+int mouseX;
+int mouseY;
 
 int targetFPS = 60;
-float currentFPS = 0.0f;
+int useVSync = ORIN_FALSE;
 
-int lastId = -999;
+Camera2D camera = { Vector2{0.0f, 0.0f}, 0.0f };
 
-void InitWindow(const int width, const int height, const char* title) {
+float deltaTime;
+float elapsedTime;
+
+float lastDelta = GetTime();
+float lastTime = GetNanoTime();
+float lastTimer = GetCurrentTimeMillis();
+double nsPerTick = 1000000000.0 / targetFPS;
+double unprocessed = 0;
+int frameCount = 0;
+int frames = 0;
+bool shouldRender = true;
+
+static GLuint lastId = -999;
+
+void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (key < 0 || key > KEY_LAST) {
+        return;
+    }
+    
+    keys[key] = action != GLFW_RELEASE;
+    keysJustPressed[key] = action == GLFW_PRESS;
+}
+
+void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+    if (button < 0 || button > BUTTON_LAST) {
+        return;
+    }
+    
+    buttons[button] = action != GLFW_RELEASE;
+    buttons[button] = action == GLFW_PRESS;
+}
+
+void FramebufferSizeCallback(GLFWwindow* window, int w, int h) {
+    glViewport(0, 0, w, h);
+    width = w;
+    height = h;
+}
+
+void MousePositionCallback(GLFWwindow* window, double xpos, double ypos) {
+    mouseX = static_cast<int>(xpos);
+    mouseY = static_cast<int>(ypos);
+}
+
+void InitWindow(const int initialWidth, const int initialHeight, const char* title) {
     if (!glfwInit()) {
         Log(ORIN_FATAL, "Failed to initialize GLFW.");
         exit(EXIT_FAILURE);
     }
+    
+    width = initialWidth;
+    height = initialHeight;
     
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
@@ -32,12 +87,17 @@ void InitWindow(const int width, const int height, const char* title) {
         exit(EXIT_FAILURE);
     }
     
+    glfwSetKeyCallback(window, KeyCallback);
+    glfwSetMouseButtonCallback(window, MouseButtonCallback);
+    glfwSetCursorPosCallback(window, MousePositionCallback);
+    glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
+    
     const GLFWvidmode* vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
     glfwSetWindowPos(window, (vidmode->width - width) / 2, (vidmode->height - height) / 2);
     glfwMakeContextCurrent(window);
     glfwShowWindow(window);
-    glfwSwapInterval(0);
-    Log(ORIN_SUCCESS, "Window initialized successfully.");
+    glfwSwapInterval(useVSync);
+    Log(ORIN_SUCCESS, "Window created");
     
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
@@ -57,22 +117,36 @@ void CloseWindow() {
 }
 
 void UpdateWindow() {
-    float now = GetTime();
-    deltaTime = now - lastTime;
+    if (!window) {
+        return;
+    }
+    
+    float now = GetNanoTime();
+    unprocessed += (now - lastTime) / nsPerTick;
     lastTime = now;
     
-    float targetFrameTime = 1.0f / targetFPS;
-    if (deltaTime < targetFrameTime) {
-       float sleepTime = targetFrameTime - deltaTime;
-       std::this_thread::sleep_for(std::chrono::duration<float>(sleepTime));
+    float nowDelta = GetTime();
+    deltaTime = nowDelta - lastDelta;
+    lastDelta = nowDelta;
+    
+    elapsedTime += deltaTime;
+    
+    while (unprocessed >= 1) {
+        shouldRender = true;
+        frames++;
+        unprocessed -= 1;
     }
     
-    frameCount++;
+    if (GetCurrentTimeMillis() - lastTimer >= 1000) {
+        frameCount = frames;
+        frames = 0;
+        lastTimer += 1000;
+    }
     
-    if (window) {
+    if (shouldRender) {
         glfwSwapBuffers(window);
-        glfwPollEvents();
     }
+    glfwPollEvents();
 }
 
 void ClearBackground(float r, float g, float b, float a) {
@@ -85,33 +159,34 @@ void ClearBackground(const Color& color) {
 }
 
 void Log(int mode, const char* str) {
-    const char* message = nullptr;
+    std::string prefix = "";
     bool isError = false;
     
     switch (mode) {
         case ORIN_SUCCESS:
-            message = "[SUCCESS]: ";
+            prefix = "[SUCCESS]: ";
             break;
         case ORIN_ERROR:
-            message = "[ERROR]: ";
+            prefix = "[ERROR]: ";
             isError = true;
             break;
         case ORIN_WARNING:
-            message = "[WARNING]: ";
+            prefix = "[WARNING]: ";
             break;
         case ORIN_FATAL:
-            message = "[FATAL]: ";
+            prefix = "[FATAL]: ";
             isError = true;
             break;
         default:
-            message = "[INFO]: ";
+            prefix = "[INFO]: ";
             break;
     }
     
+    prefix = "[LOG]" + prefix;
     if (isError) {
-        std::cerr << "[LOG]" << message << str << std::endl;
+        std::cerr << prefix << str << std::endl;
     } else {
-        std::cout << "[LOG]" << message << str << std::endl;
+        std::cout << prefix << str << std::endl;
     }
 }
 
@@ -129,6 +204,20 @@ void SetWindowTitle(const char* title) {
 
 void BeginDrawing() {
     SetColor(WHITE);
+    
+    float zoom = 1.0f;
+    if (camera.zoom >= 1.0) {
+        zoom = camera.zoom;
+    }
+    
+    float w = GetWindowWidth() / zoom;
+    float h = GetWindowHeight() / zoom;
+    
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0.0f, w, 0.0f, h, -1.0f, 1.0f);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 }
 
 void EndDrawing() {
@@ -140,6 +229,29 @@ void DrawRectangle(float x, float y, float width, float height) {
     glVertex2f(x + width, y);
     glVertex2f(x + width, y + height);
     glVertex2f(x, y + height);
+    glEnd();
+}
+
+void DrawRectangle(float x, float y, float width, float height, float degrees) {
+    float radians = -degrees * (M_PI / 180.0f);
+
+    float centerX = x + width / 2.0f;
+    float centerY = y + height / 2.0f;
+
+    float corners[4][2] = {
+        { -width / 2.0f, -height / 2.0f },
+        {  width / 2.0f, -height / 2.0f },
+        {  width / 2.0f,  height / 2.0f },
+        { -width / 2.0f,  height / 2.0f }
+    };
+
+    glBegin(GL_QUADS);
+    for (int i = 0; i < 4; i++) {
+        float xx = corners[i][0] * cos(radians) - corners[i][1] * sin(radians);
+        float yy = corners[i][0] * sin(radians) + corners[i][1] * cos(radians);
+
+        glVertex2f(centerX + xx, centerY + yy);
+    }
     glEnd();
 }
 
@@ -164,12 +276,121 @@ void DrawTexture(Texture2D& texture, float x, float y, float width, float height
     glDisable(GL_TEXTURE_2D);
 }
 
-void SetCamera(const Camera2D& camera) {
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0.0f, GetWindowWidth() / camera.zoom, 0.0f, GetWindowHeight() / camera.zoom, -1.0f, 1.0f);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+void DrawTexture(Texture2D& texture, float x, float y, float width, float height, float degrees) {
+    glEnable(GL_TEXTURE_2D);
+    if (lastId != texture.id) {
+        glBindTexture(GL_TEXTURE_2D, texture.id);
+        lastId = texture.id;
+    }
+
+    float radians = -degrees * (M_PI / 180.0f);
+    float centerX = x + width / 2.0f;
+    float centerY = y + height / 2.0f;
+
+    float corners[4][2] = {
+        { -width / 2.0f, -height / 2.0f },
+        {  width / 2.0f, -height / 2.0f },
+        {  width / 2.0f,  height / 2.0f },
+        { -width / 2.0f,  height / 2.0f }
+    };
+
+    float texCoords[4][2] = {
+        { 0.0f, 0.0f },
+        { 1.0f, 0.0f },
+        { 1.0f, 1.0f },
+        { 0.0f, 1.0f }
+    };
+
+    glBegin(GL_QUADS);
+    for (int i = 0; i < 4; i++) {
+        float xx = corners[i][0] * cos(radians) - corners[i][1] * sin(radians);
+        float yy = corners[i][0] * sin(radians) + corners[i][1] * cos(radians);
+
+        float wx = centerX + xx;
+        float wy = centerY + yy;
+
+        glTexCoord2f(texCoords[i][0], texCoords[i][1]);
+        glVertex2f(wx, wy);
+    }
+    glEnd();
+
+    glDisable(GL_TEXTURE_2D);
+}
+
+void DrawTexturePro(Texture2D& texture, Region& subTexture, float x, float y, float width, float height) {
+    float x0 = (float) subTexture.x / texture.width;
+    float y0 = (float) subTexture.y / texture.height;
+    float x1 = (float) (subTexture.x + subTexture.width) / texture.width;
+    float y1 = (float) (subTexture.y + subTexture.height) / texture.height;
+    
+    glEnable(GL_TEXTURE_2D);
+    if (lastId != texture.id) {
+        glBindTexture(GL_TEXTURE_2D, texture.id);
+        lastId = texture.id;
+    }
+    
+    glBegin(GL_QUADS);
+    glTexCoord2f(x0, y0);
+    glVertex2f(x, y);
+    glTexCoord2f(x1, y0);
+    glVertex2f(x + width, y);
+    glTexCoord2f(x1, y1);
+    glVertex2f(x + width, y + height);
+    glTexCoord2f(x0, y1);
+    glVertex2f(x, y + height);
+    glEnd();
+    
+    glDisable(GL_TEXTURE_2D);
+}
+
+void DrawTexturePro(Texture2D& texture, Region& subTexture, float x, float y, float width, float height, float degrees) {
+    glEnable(GL_TEXTURE_2D);
+    if (lastId != texture.id) {
+        glBindTexture(GL_TEXTURE_2D, texture.id);
+        lastId = texture.id;
+    }
+
+    float radians = -degrees * (M_PI / 180.0f);
+    float centerX = x + width / 2.0f;
+    float centerY = y + height / 2.0f;
+
+    float corners[4][2] = {
+        { -width / 2.0f, -height / 2.0f },
+        {  width / 2.0f, -height / 2.0f },
+        {  width / 2.0f,  height / 2.0f },
+        { -width / 2.0f,  height / 2.0f }
+    };
+    
+    float x0 = (float) subTexture.x / texture.width;
+    float y0 = (float) subTexture.y / texture.height;
+    float x1 = (float) (subTexture.x + subTexture.width) / texture.width;
+    float y1 = (float) (subTexture.y + subTexture.height) / texture.height;
+
+    float texCoords[4][2] = {
+        { x0, y0 },
+        { x1, y0 },
+        { x1, y1 },
+        { x0, y1 }
+    };
+
+    glBegin(GL_QUADS);
+    for (int i = 0; i < 4; i++) {
+        float xx = corners[i][0] * cos(radians) - corners[i][1] * sin(radians);
+        float yy = corners[i][0] * sin(radians) + corners[i][1] * cos(radians);
+
+        float wx = centerX + xx;
+        float wy = centerY + yy;
+
+        glTexCoord2f(texCoords[i][0], texCoords[i][1]);
+        glVertex2f(wx, wy);
+    }
+    glEnd();
+
+    glDisable(GL_TEXTURE_2D);
+}
+
+void SetCamera(const Camera2D& cam) {
+    camera = cam;
 }
 
 void SetColor(float r, float g, float b, float a) {
@@ -194,20 +415,54 @@ int GetWindowHeight() {
     return height;
 }
 
-bool IsKeyPressed(const int key) {
-    return glfwGetKey(window, key);
+bool IsKeyDown(const int& key) {
+    return keys[key];
 }
 
-bool IsMousePressed(const int button) {
-    return glfwGetMouseButton(window, button);
+bool IsKeyPressed(const int& key) {
+    bool result = keysJustPressed[key];
+    keysJustPressed[key] = false;
+    return result;
+}
+
+bool IsMouseDown(const int& button) {
+    return buttons[button];
+}
+
+bool IsMousePressed(const int& button) {
+    bool result = buttons[button];
+    buttons[button] = false;
+    return result;
+}
+
+int GetMouseX() {
+    return mouseX;
+}
+
+int GetMouseY() {
+    return mouseY;
+}
+
+float GetElapsedTime() {
+    return elapsedTime;
 }
 
 float GetTime() {
     return (float) glfwGetTime();
 }
 
-void SetFPS(const int fps) {
+void SetFPS(int fps) {
+    if (fps <= 0) {
+        fps = 1;
+    }
     targetFPS = fps;
+    nsPerTick = 1000000000.0 / fps;
+}
+
+void UseVSync(const int& sync) {
+    if (window) {
+        glfwSwapInterval(sync);
+    }
 }
 
 float GetDeltaTime() {
@@ -215,16 +470,7 @@ float GetDeltaTime() {
 }
 
 int GetFPS() {
-    static float lastTimeCheck = GetTime();
-    float now = GetTime();
-    
-    if (now - lastTimeCheck >= 1.0f) {
-        currentFPS = (float) frameCount;
-        frameCount = 0;
-        lastTimeCheck = now;
-    }
-    
-    return (int) currentFPS;
+    return frameCount;
 }
 
 Texture2D LoadTexture(const char* filePath) {
@@ -235,8 +481,6 @@ Texture2D LoadTexture(const char* filePath) {
     std::filesystem::path sourcePath = std::filesystem::path(__FILE__).parent_path();
     std::filesystem::path texturePath = sourcePath / filePath;
     std::string textureFilePath = texturePath.string();
-    
-    std::cout << textureFilePath << std::endl;
     
     stbi_set_flip_vertically_on_load(true);
     unsigned char* data = stbi_load(textureFilePath.c_str(), &width, &height, &channels, 0);
@@ -254,7 +498,10 @@ Texture2D LoadTexture(const char* filePath) {
         }
         
         stbi_image_free(data);
-        return { (int) texture };
+        
+        Log(ORIN_SUCCESS, (std::string("Loaded texture [") + filePath + "]").c_str());
+        
+        return { static_cast<int>(texture), width, height };
     } else {
         Log(ORIN_ERROR, ("Failed to load texture: " + std::string(filePath)).c_str());
         return { 0 };
@@ -268,4 +515,28 @@ void UnloadTexture(Texture2D& texture) {
 
 float Vector2Length(const Vector2& v) {
     return sqrtf(v.x * v.x + v.y * v.y);
+}
+
+bool RectIntersects(Rectangle& r1, Rectangle& r2) {
+    return !(r1.x > r2.x + r2.width  ||
+             r1.x + r1.width < r2.x  ||
+             r1.y > r2.y + r2.height ||
+             r1.y + r1.height < r2.y);
+}
+
+long long GetNanoTime() {
+    auto now = std::chrono::high_resolution_clock::now();
+    auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch());
+    return nanos.count();
+}
+
+long long GetCurrentTimeMillis() {
+    auto now = std::chrono::high_resolution_clock::now();
+    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
+    return millis.count();
+}
+
+bool PointInRect(Rectangle& rect, float x, float y) {
+    return (x >= rect.x && x <= rect.x + rect.width &&
+            y >= rect.y && y <= rect.y + rect.height);
 }

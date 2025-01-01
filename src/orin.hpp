@@ -1,9 +1,11 @@
 #pragma once
 
-#include <iostream>
+#define ORIN_VERSION      "0.0.5a"
+#define ORIN_MAJOR              0
+#define ORIN_MINOR              5
 
-#define ORIN_TRUE true
-#define ORIN_FALSE false
+#define ORIN_TRUE             0x1
+#define ORIN_FALSE            0x0
 
 #define ORIN_ERROR            0x0
 #define ORIN_WARNING          0x1
@@ -132,18 +134,18 @@
 #define KEY_MENU               348
 #define KEY_LAST               KEY_MENU
 
-#define MOUSE_BUTTON_1         0
-#define MOUSE_BUTTON_2         1
-#define MOUSE_BUTTON_3         2
-#define MOUSE_BUTTON_4         3
-#define MOUSE_BUTTON_5         4
-#define MOUSE_BUTTON_6         5
-#define MOUSE_BUTTON_7         6
-#define MOUSE_BUTTON_8         7
-#define MOUSE_BUTTON_LAST      MOUSE_BUTTON_8
-#define MOUSE_BUTTON_LEFT      MOUSE_BUTTON_1
-#define MOUSE_BUTTON_RIGHT     MOUSE_BUTTON_2
-#define MOUSE_BUTTON_MIDDLE    MOUSE_BUTTON_3
+#define BUTTON_1         0
+#define BUTTON_2         1
+#define BUTTON_3         2
+#define BUTTON_4         3
+#define BUTTON_5         4
+#define BUTTON_6         5
+#define BUTTON_7         6
+#define BUTTON_8         7
+#define BUTTON_LAST      BUTTON_8
+#define BUTTON_LEFT      BUTTON_1
+#define BUTTON_RIGHT     BUTTON_2
+#define BUTTON_MIDDLE    BUTTON_3
 
 struct Vector2 {
     float x;
@@ -303,6 +305,13 @@ typedef struct {
 } Rectangle;
 
 typedef struct {
+    int x;
+    int y;
+    int width;
+    int height;
+} Region;
+
+typedef struct {
     float r;
     float g;
     float b;
@@ -316,10 +325,30 @@ typedef struct {
 
 typedef struct {
     int id;
+    int width;
+    int height;
 } Texture2D;
 
 #define WHITE (Color{ 1.0f, 1.0f, 1.0f, 1.0f })
-#define BLACK (Color{ 0.0f, 0.0f, 0.0f, 0.0f })
+#define BLACK (Color{ 0.0f, 0.0f, 0.0f, 1.0f })
+#define GRAY (Color{ 0.5f, 0.5f, 0.5f, 1.0f })
+#define LIGHT_GRAY (Color{ 0.75f, 0.75f, 0.75f, 1.0f })
+#define DARK_GRAY (Color{ 0.25f, 0.25f, 0.25f, 1.0f })
+
+#define RED (Color{ 1.0f, 0.0f, 0.0f, 1.0f })
+#define GREEN (Color{ 0.0f, 1.0f, 0.0f, 1.0f })
+#define BLUE (Color{ 0.0f, 0.0f, 1.0f, 1.0f })
+#define YELLOW (Color{ 1.0f, 1.0f, 0.0f, 1.0f })
+#define CYAN (Color{ 0.0f, 1.0f, 1.0f, 1.0f })
+#define MAGENTA (Color{ 1.0f, 0.0f, 1.0f, 1.0f })
+
+#define ORANGE (Color{ 1.0f, 0.5f, 0.0f, 1.0f })
+#define PURPLE (Color{ 0.5f, 0.0f, 0.5f, 1.0f })
+#define BROWN (Color{ 0.6f, 0.3f, 0.0f, 1.0f })
+#define PINK (Color{ 1.0f, 0.75f, 0.8f, 1.0f })
+#define LIME (Color{ 0.75f, 1.0f, 0.0f, 1.0f })
+
+#define TRANSPARENT (Color{ 0.0f, 0.0f, 0.0f, 0.0f })
 
 void InitWindow(const int width, const int height, const char* title);
 void UpdateWindow();
@@ -329,7 +358,8 @@ void CloseWindow();
 Texture2D LoadTexture(const char* fileName);
 void UnloadTexture(Texture2D& texture);
 
-void SetFPS(const int fps);
+void SetFPS(int fps);
+void UseVSync(const int& sync);
 
 void SetWindowSize(const int width, const int height);
 void SetWindowTitle(const char* title);
@@ -346,15 +376,27 @@ void BeginDrawing();
 void EndDrawing();
 
 void DrawRectangle(float x, float y, float width, float height);
+void DrawRectangle(float x, float y, float width, float height, float degrees);
+
 void DrawTexture(Texture2D& texture, float x, float y, float width, float height);
+void DrawTexture(Texture2D& texture, float x, float y, float width, float height, float degrees);
+
+void DrawTexturePro(Texture2D& texture, Region& subTexture, float x, float y, float width, float height);
+void DrawTexturePro(Texture2D& texture, Region& subTexture, float x, float y, float width, float height, float degrees);
 
 int GetWindowWidth();
 int GetWindowHeight();
 
-bool IsKeyPressed(const int key);
-bool IsMousePressed(const int button);
+bool IsKeyDown(const int& key);
+bool IsKeyPressed(const int& key);
+bool IsMouseDown(const int& button);
+bool IsMousePressed(const int& button);
+
+int GetMouseX();
+int GetMouseY();
 
 float GetTime();
+float GetElapsedTime();
 float GetDeltaTime();
 
 int GetFPS();
@@ -372,3 +414,9 @@ float Vector3Distance(const Vector3& v1, const Vector3& v2);
 float Vector4Length(const Vector4& v);
 void Vector4Normalize(Vector4& v);
 float Vector4Distance(const Vector4& v1, const Vector4& v2);
+
+bool RectIntersects(Rectangle& r1, Rectangle& r2);
+bool PointInRect(Rectangle& rect, float x, float y);
+
+long long GetNanoTime();
+long long GetCurrentTimeMillis();
