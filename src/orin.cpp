@@ -517,6 +517,62 @@ float Vector2Length(const Vector2& v) {
     return sqrtf(v.x * v.x + v.y * v.y);
 }
 
+void Vector2Normalize(Vector2& v) {
+    float length = Vector2Length(v);
+    if (length > 0.0f) {
+        v.x /= length;
+        v.y /= length;
+    }
+}
+
+float Vector2Distance(const Vector2& v1, const Vector2& v2) {
+    float dx = v1.x - v2.x;
+    float dy = v1.y - v2.y;
+    return sqrtf(dx * dx + dy * dy);
+}
+
+float Vector3Length(const Vector3& v) {
+    return sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
+}
+
+void Vector3Normalize(Vector3& v) {
+    float length = Vector3Length(v);
+    if (length > 0.0f) {
+        v.x /= length;
+        v.y /= length;
+        v.z /= length;
+    }
+}
+
+float Vector3Distance(const Vector3& v1, const Vector3& v2) {
+    float dx = v1.x - v2.x;
+    float dy = v1.y - v2.y;
+    float dz = v1.z - v2.z;
+    return sqrtf(dx * dx + dy * dy + dz * dz);
+}
+
+float Vector4Length(const Vector4& v) {
+    return sqrtf(v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w);
+}
+
+void Vector4Normalize(Vector4& v) {
+    float length = Vector4Length(v);
+    if (length > 0.0f) {
+        v.x /= length;
+        v.y /= length;
+        v.z /= length;
+        v.w /= length;
+    }
+}
+
+float Vector4Distance(const Vector4& v1, const Vector4& v2) {
+    float dx = v1.x - v2.x;
+    float dy = v1.y - v2.y;
+    float dz = v1.z - v2.z;
+    float dw = v1.w - v2.w;
+    return sqrtf(dx * dx + dy * dy + dz * dz + dw * dw);
+}
+
 bool RectIntersects(Rectangle& r1, Rectangle& r2) {
     return !(r1.x > r2.x + r2.width  ||
              r1.x + r1.width < r2.x  ||

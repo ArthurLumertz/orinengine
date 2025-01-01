@@ -1,6 +1,6 @@
 #pragma once
 
-#define ORIN_VERSION      "0.0.5a"
+#define ORIN_VERSION      "0.0.6a"
 #define ORIN_MAJOR              0
 #define ORIN_MINOR              5
 
