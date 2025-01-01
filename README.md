@@ -1,4 +1,4 @@
-# Orin
+# Orin - C++ Game Framework
 
 A C++ game framework built with OpenGL.
 
