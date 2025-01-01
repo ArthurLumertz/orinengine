@@ -26,6 +26,10 @@ int main() {
     // Clear the background with black
     ClearBackground(BLACK);
 
+    // Reset the velocity each frame
+    velocity.x = 0.0f;
+    velocity.y = 0.0f;
+
     // Check if the 'W' key is pressed
     if (IsKeyDown(KEY_W)) {
         velocity.y++;  // Increase the Y velocity
