@@ -1,57 +1,67 @@
-<h1>Orin</h1>
-<p>C++ game framework made in OpenGL.</p>
-<p>Similar to LibGDX, RayLib and MonoGame.</p>
-<h3>Setup</h3>
-<p>To setup, download the files inside ./src and add them to the project's directory.</p>
-<p>After this, create a main file and start using Orin:</p>
-<br>
-<h3>Basic example</h3>
-<p>This example shows you how to open a window and render basic graphics on it. It shows how to create a camera and load/unload textures.</p>
-<p>Keep in mind this library is in its development stage! Several new performance updates will be coming in 2025.</p>
+# Orin
+
+A C++ game framework built with OpenGL.
+
+Similar to LibGDX, RayLib, and MonoGame, Orin provides a simple and effective way to build games using OpenGL.
+
+## Setup
+
+To set up Orin, follow these steps:
+
+1. Download the files inside the `./src` directory.
+2. Add the files to your project's directory.
+
+After that, create a `main.cpp` file and start using Orin as shown below.
+
+## Basic Example
+
+This example demonstrates how to open a window, render basic graphics, create a camera, and load/unload textures.
+
+> Keep in mind, this library is still in its development stage, and several performance improvements will be coming in 2025!
 
 ```cpp
 #include "orin.hpp"
 
 int main() {
-  // Initializes a basic window
-  InitWindow(960, 540, "First Application");
+    // Initializes a basic window with the title "First Application"
+    InitWindow(960, 540, "First Application");
 
-  // Create a camera Camera(position, zoom)
-  Camera2D camera;
-  camera.position = { 0.0f, 0.0f };
-  camera.zoom = 0.0f;
+    // Create and set up a basic camera (position and zoom)
+    Camera2D camera;
+    camera.position = { 0.0f, 0.0f };
+    camera.zoom = 1.0f;
 
-  // Load a basic texture
-  Texture2D texture = LoadTexture("image.png");
+    // Load a basic texture from an image file
+    Texture2D texture = LoadTexture("image.png");
 
-  // While the window shouldn't close
-  while (!WindowShouldClose()) {
-    ClearBackground(WHITE); // Clear the background with white color
-    
-    BeginDrawing(); // Begin rendering
-    SetColor(BLACK); // Sets the rendering color to black
+    // Game loop: Run until the user closes the window
+    while (!WindowShouldClose()) {
+        ClearBackground(WHITE); // Clear the screen with a white background
+        
+        BeginDrawing(); // Begin rendering
 
-    // Draw a basic rectangle at the position 0, 0 with the size of 48, 48
-    DrawRectangle(0.0f, 0.0f, 48.0f, 48.0f);
+        SetColor(BLACK); // Set the rendering color to black
+        // Draw a black rectangle at position (0, 0) with size 48x48
+        DrawRectangle(0.0f, 0.0f, 48.0f, 48.0f);
 
-    // Draw a basic rectangle rotated 45 degrees at 0, 48 with the size of 48, 48
-    DrawRectangle(0.0f, 48.0f, 48.0f, 48.0f, 45.0f);
+        // Draw a black rectangle rotated 45 degrees at position (0, 48)
+        DrawRectangle(0.0f, 48.0f, 48.0f, 48.0f, 45.0f);
 
-    SetColor(WHITE); // Sets the rendering color to white before drawing texture
-    // Draws the texture at the position 48, 0, with the size of 48, 48
-    DrawTexture(texture, 48.0f, 0.0f, 48.0f, 48.0f);
-    
-    EndDrawing(); // End rendering
+        SetColor(WHITE); // Set the rendering color to white before drawing the texture
+        // Draw the texture at position (48, 0) with size 48x48
+        DrawTexture(texture, 48.0f, 0.0f, 48.0f, 48.0f);
+        
+        EndDrawing(); // End rendering
 
-    // Update the window
-    UpdateWindow();
-  }
+        // Update the window
+        UpdateWindow();
+    }
 
-  // Unloads the texture loaded previously
-  UnloadTexture(texture);
+    // Unloads the texture loaded previously
+    UnloadTexture(texture);
 
-  // Closes the window
-  CloseWindow();
+    // Closes the window
+    CloseWindow();
 
-  return 0;
+    return 0;
 }
