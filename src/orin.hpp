@@ -338,9 +338,22 @@ long long GetCurrentTimeMillis();
 
 int Random(const int min, const int max);
 float Random(const float min, const float max);
+bool RandomBool();
 
 int Clamp(const int value, const int min, const int max);
 float Clamp(const float value, const float min, const float max);
 
 void DisableCursor();
 void EnableCursor();
+
+bool FileExists(const char* fileName);
+bool DirectoryExists(const char* dirPath);
+bool CreateDirectory(const char* dirPath);
+bool DeleteFile(const char* fileName);
+bool DeleteDirectory(const char* dirPath);
+uint64_t GetFileSize(const char* filePath);
+std::string GetCurrentWorkingDirectory();
+std::vector<std::string> ListFilesInDirectory(const char* dirPath);
+
+void WriteTextFile(const char* filePath, const std::string& content);
+std::string ReadTextFile(const char* filePath);

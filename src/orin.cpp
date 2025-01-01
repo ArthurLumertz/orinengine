@@ -10,7 +10,9 @@
 #include <cmath>
 #include <chrono>
 #include <string>
+#include <fstream>
 #include <random>
+#include <filesystem>
 #include "stb_image.h"
 //#include "stb_vorbis.h"
 
@@ -943,6 +945,11 @@ float Random(const float min, const float max) {
     return dis(gen);
 }
 
+bool RandomBool() {
+    std::uniform_int_distribution<> dis(0, 1);
+    return dis(gen) == 1;
+}
+
 int Clamp(const int value, const int min, const int max) {
     return value < min ? min : (value > max ? max : value);
 }
@@ -959,4 +966,89 @@ void DisableCursor() {
 void EnableCursor() {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     mouseGrabbed = false;
+}
+
+const char* getFileLocation(const char* filePath) {
+    std::filesystem::path sourcePath = std::filesystem::path(__FILE__).parent_path();
+    std::filesystem::path path = sourcePath / filePath;
+    std::string newFilePath = path.string();
+    return newFilePath.c_str();
+}
+
+bool FileExists(const char* filePath) {
+    filePath = getFileLocation(filePath);
+    return std::filesystem::exists(filePath) && !std::filesystem::is_directory(filePath);
+}
+
+bool DirectoryExists(const char* dirPath) {
+    dirPath = getFileLocation(dirPath);
+    return std::filesystem::exists(dirPath) && std::filesystem::is_directory(dirPath);
+}
+
+void WriteTextFile(const char* filePath, const std::string& content) {
+    std::ofstream file(getFileLocation(filePath));
+    
+    if (!file.is_open()) {
+        Log(ORIN_ERROR, ("Failed to write text file" + std::string(filePath)).c_str());
+        return;
+    }
+    
+    std::stringstream ss(content);
+    std::string line;
+    
+    while (std::getline(ss, line, '\n')) {
+        file << line << std::endl;
+    }
+    
+    file.close();
+}
+
+std::string ReadTextFile(const char* filePath) {
+    std::ifstream file(getFileLocation(filePath));
+    std::string result;
+    
+    if (!file.is_open()) {
+        Log(ORIN_ERROR, ("Failed to load text file: " + std::string(filePath)).c_str());
+        return "";
+    }
+    
+    std::string line;
+    while (std::getline(file, line)) {
+        result += line + "\n";
+    }
+    
+    file.close();
+    return result;
+}
+
+bool CreateDirectory(const char* dirPath) {
+    return std::filesystem::create_directory(getFileLocation(dirPath));
+}
+
+bool DeleteFile(const char* filePath) {
+    return std::filesystem::remove(getFileLocation(filePath));
+}
+
+bool DeleteDirectory(const char* dirPath) {
+    return std::filesystem::remove_all(getFileLocation(dirPath)) > 0;
+}
+
+uint64_t GetFileSize(const char* filePath) {
+    return std::filesystem::file_size(filePath);
+}
+
+std::string GetCurrentWorkingDirectory() {
+    return std::filesystem::current_path().string();
+}
+
+std::vector<std::string> ListFilesInDirectory(const char* dirPath) {
+    std::vector<std::string> files;
+    
+    for (const auto& entry : std::filesystem::directory_iterator(dirPath)) {
+        if (entry.is_regular_file()) {
+            files.push_back(entry.path().string());
+        }
+    }
+    
+    return files;
 }
