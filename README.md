@@ -14,10 +14,12 @@
 
 int main() {
   // Initializes a basic window
-  InitWindow(960, 540, "Hello world");
+  InitWindow(960, 540, "First Application");
 
   // Create a camera Camera(position, zoom)
-  Camera2D camera(Vector2{ 0.0f, 0.0f }, 0.0f);
+  Camera2D camera;
+  camera.position = { 0.0f, 0.0f };
+  camera.zoom = 0.0f;
 
   // Load a basic texture
   Texture2D texture = LoadTexture("image.png");
@@ -30,11 +32,14 @@ int main() {
     SetColor(BLACK); // Sets the rendering color to black
 
     // Draw a basic rectangle at the position 0, 0 with the size of 48, 48
-    DrawRectangle(0, 0, 48, 48);
+    DrawRectangle(0.0f, 0.0f, 48.0f, 48.0f);
+
+    // Draw a basic rectangle rotated 45 degrees at 0, 48 with the size of 48, 48
+    DrawRectangle(0.0f, 48.0f, 48.0f, 48.0f, 45.0f);
 
     SetColor(WHITE); // Sets the rendering color to white before drawing texture
     // Draws the texture at the position 48, 0, with the size of 48, 48
-    DrawTexture(texture, 48, 0, 48, 48);
+    DrawTexture(texture, 48.0f, 0.0f, 48.0f, 48.0f);
     
     EndDrawing(); // End rendering
 
