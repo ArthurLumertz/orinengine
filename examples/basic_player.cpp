@@ -19,7 +19,7 @@ int main() {
   Vector2 velocity = { 0.0f, 0.0f };
 
   // Assign the speed
-  float speed = 5.0f;
+  float speed = 200.0f;
 
   // While the window shouldn't close
   while (!WindowShouldClose()) {
