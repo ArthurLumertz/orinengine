@@ -1,6 +1,8 @@
 #pragma once
 
-#define ORIN_VERSION      "0.0.6a"
+#include <iostream>
+
+#define ORIN_VERSION      "0.0.7a"
 #define ORIN_MAJOR              0
 #define ORIN_MINOR              5
 
@@ -11,6 +13,7 @@
 #define ORIN_WARNING          0x1
 #define ORIN_FATAL            0x2
 #define ORIN_SUCCESS          0x3
+#define ORIN_INFO             0x4
 
 #define KEY_SPACE              32
 #define KEY_APOSTROPHE         39
@@ -147,155 +150,23 @@
 #define BUTTON_RIGHT     BUTTON_2
 #define BUTTON_MIDDLE    BUTTON_3
 
-struct Vector2 {
+typedef struct {
     float x;
     float y;
-    
-    Vector2& operator+=(const Vector2& other) {
-        x += other.x;
-        y += other.y;
-        return *this;
-    }
-    
-    Vector2& operator-=(const Vector2& other) {
-        x -= other.x;
-        y -= other.y;
-        return *this;
-    }
-    
-    Vector2& operator*=(const Vector2& other) {
-        x *= other.x;
-        y *= other.y;
-        return *this;
-    }
-    
-    Vector2& operator/=(const Vector2& other) {
-        x /= other.x;
-        y /= other.y;
-        return *this;
-    }
+} Vector2;
 
-    Vector2 operator+(const Vector2& other) const {
-        return {x + other.x, y + other.y};
-    }
-
-    Vector2 operator-(const Vector2& other) const {
-        return {x - other.x, y - other.y};
-    }
-
-    Vector2 operator*(const Vector2& other) const {
-        return {x * other.x, y * other.y};
-    }
-
-    Vector2 operator/(const Vector2& other) const {
-        return {x / other.x, y / other.y};
-    }
-};
-
-struct Vector3 {
+typedef struct {
     float x;
     float y;
     float z;
-    
-    Vector3& operator+=(const Vector3& other) {
-        x += other.x;
-        y += other.y;
-        z += other.z;
-        return *this;
-    }
-    
-    Vector3& operator-=(const Vector3& other) {
-        x -= other.x;
-        y -= other.y;
-        z -= other.z;
-        return *this;
-    }
-    
-    Vector3& operator*=(const Vector3& other) {
-        x *= other.x;
-        y *= other.y;
-        z *= other.z;
-        return *this;
-    }
-    
-    Vector3& operator/=(const Vector3& other) {
-        x /= other.x;
-        y /= other.y;
-        z /= other.z;
-        return *this;
-    }
+} Vector3;
 
-    Vector3 operator+(const Vector3& other) const {
-        return {x + other.x, y + other.y, z + other.z};
-    }
-
-    Vector3 operator-(const Vector3& other) const {
-        return {x - other.x, y - other.y, z - other.z};
-    }
-
-    Vector3 operator*(const Vector3& other) const {
-        return {x * other.x, y * other.y, z * other.z};
-    }
-
-    Vector3 operator/(const Vector3& other) const {
-        return {x / other.x, y / other.y, z / other.z};
-    }
-};
-
-struct Vector4 {
+typedef struct {
     float x;
     float y;
     float z;
     float w;
-    
-    Vector4& operator+=(const Vector4& other) {
-        x += other.x;
-        y += other.y;
-        z += other.z;
-        w += other.w;
-        return *this;
-    }
-    
-    Vector4& operator-=(const Vector4& other) {
-        x -= other.x;
-        y -= other.y;
-        z -= other.z;
-        w -= other.w;
-        return *this;
-    }
-    
-    Vector4& operator*=(const Vector4& other) {
-        x *= other.x;
-        y *= other.y;
-        z *= other.z;
-        w *= other.w;
-        return *this;
-    }
-    
-    Vector4& operator/=(const Vector4& other) {
-        x /= other.x;
-        y /= other.y;
-        z /= other.z;
-        w /= other.w;
-        return *this;
-    }
-
-    Vector4 operator+(const Vector4& other) const {
-        return {x + other.x, y + other.y, z + other.z, w + other.w};
-    }
-
-    Vector4 operator-(const Vector4& other) const {
-        return {x - other.x, y - other.y, z - other.z, w - other.w};
-    }
-
-    Vector4 operator*(const Vector4& other) const {
-        return {x * other.x, y * other.y, z * other.z, w * other.w};
-    }
-
-    Vector4 operator/(const Vector4& other) const {
-        return {x / other.x, y / other.y, z / other.z, w / other.w};
-    }
-};
+} Vector4;
 
 typedef struct {
     float x;
@@ -303,6 +174,11 @@ typedef struct {
     float width;
     float height;
 } Rectangle;
+
+typedef struct {
+    Vector3 min;
+    Vector3 max;
+} BoundingBox;
 
 typedef struct {
     int x;
@@ -320,6 +196,7 @@ typedef struct {
 
 typedef struct {
     Vector2 position;
+    //Vector2 target;
     float zoom;
 } Camera2D;
 
@@ -328,6 +205,13 @@ typedef struct {
     int width;
     int height;
 } Texture2D;
+
+//typedef struct {
+//    unsigned int buffer;
+//    unsigned int source;
+//    int format;
+//    int frequency;
+//} Audio;
 
 #define WHITE (Color{ 1.0f, 1.0f, 1.0f, 1.0f })
 #define BLACK (Color{ 0.0f, 0.0f, 0.0f, 1.0f })
@@ -350,13 +234,17 @@ typedef struct {
 
 #define TRANSPARENT (Color{ 0.0f, 0.0f, 0.0f, 0.0f })
 
-void InitWindow(const int width, const int height, const char* title);
+bool InitWindow(const int width, const int height, const char* title);
 void UpdateWindow();
 bool WindowShouldClose();
 void CloseWindow();
 
-Texture2D LoadTexture(const char* fileName);
-void UnloadTexture(Texture2D& texture);
+Texture2D LoadTexture(const char* filePath);
+void UnloadTexture(const Texture2D& texture);
+
+//Audio LoadAudio(const char* filePath);
+//void PlayAudio(const Audio& audio);
+//void UnloadAudio(const Audio& audio);
 
 void SetFPS(int fps);
 void UseVSync(const int& sync);
@@ -387,6 +275,9 @@ void DrawTexturePro(Texture2D& texture, Region& subTexture, float x, float y, fl
 int GetWindowWidth();
 int GetWindowHeight();
 
+float GetViewportWidth();
+float GetViewportHeight();
+
 bool IsKeyDown(const int& key);
 bool IsKeyPressed(const int& key);
 bool IsMouseDown(const int& button);
@@ -394,6 +285,11 @@ bool IsMousePressed(const int& button);
 
 int GetMouseX();
 int GetMouseY();
+Vector2 GetMousePosition();
+
+float GetMouseDX();
+float GetMouseDY();
+Vector2 GetMouseDelta();
 
 float GetTime();
 float GetElapsedTime();
@@ -402,21 +298,49 @@ float GetDeltaTime();
 int GetFPS();
 
 void Log(int mode, const char* str);
+std::vector<std::string>& GetLog();
 
 float Vector2Length(const Vector2& v);
 void Vector2Normalize(Vector2& v);
 float Vector2Distance(const Vector2& v1, const Vector2& v2);
+float Vector2Dot(const Vector2& v1, const Vector2& v2);
+Vector2 Vector2Add(const Vector2& v1, const Vector2& v2);
+Vector2 Vector2Sub(const Vector2& v1, const Vector2& v2);
+Vector2 Vector2Mul(const Vector2& v1, const Vector2& v2);
 
 float Vector3Length(const Vector3& v);
 void Vector3Normalize(Vector3& v);
 float Vector3Distance(const Vector3& v1, const Vector3& v2);
+float Vector3Dot(const Vector3& v1, const Vector3& v2);
+Vector3 Vector3Add(const Vector3& v1, const Vector3& v2);
+Vector3 Vector3Sub(const Vector3& v1, const Vector3& v2);
+Vector3 Vector3Mul(const Vector3& v1, const Vector3& v2);
 
 float Vector4Length(const Vector4& v);
 void Vector4Normalize(Vector4& v);
 float Vector4Distance(const Vector4& v1, const Vector4& v2);
+float Vector4Dot(const Vector4& v1, const Vector4& v2);
+Vector4 Vector4Add(const Vector4& v1, const Vector4& v2);
+Vector4 Vector4Sub(const Vector4& v1, const Vector4& v2);
+Vector4 Vector4Mul(const Vector4& v1, const Vector4& v2);
 
-bool RectIntersects(Rectangle& r1, Rectangle& r2);
-bool PointInRect(Rectangle& rect, float x, float y);
+bool RectIntersects(const Rectangle& r1, const Rectangle& r2);
+bool PointInRect(const Rectangle& rect, float x, float y);
+
+bool PointInBoundingBox(const BoundingBox& box, const Vector3& point);
+bool BoundingBoxIntersects(const BoundingBox& box1, const BoundingBox& box2);
+
+bool IsRectangleInViewport(const Rectangle& rect);
+bool IsBoundingBoxInViewport(const BoundingBox& bb);
 
 long long GetNanoTime();
 long long GetCurrentTimeMillis();
+
+int Random(const int min, const int max);
+float Random(const float min, const float max);
+
+int Clamp(const int value, const int min, const int max);
+float Clamp(const float value, const float min, const float max);
+
+void DisableCursor();
+void EnableCursor();
